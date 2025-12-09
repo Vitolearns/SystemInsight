@@ -1,0 +1,10 @@
+{
+  "server": {
+    "listen_address": "0.0.0.0:50052",
+    "log_level": "info"
+  },
+  "exporter": {
+    "prometheus_http_port": 9102
+  }
+}
+

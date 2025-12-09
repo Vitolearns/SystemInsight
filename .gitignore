@@ -1,0 +1,26 @@
+build/
+cmake-build-*/
+.cache/
+.vscode/
+.idea/
+
+# CMake artifacts inside tree
+**/CMakeFiles/
+**/CMakeCache.txt
+**/Makefile
+
+# Generated protocol / grpc sources
+src/proto/*.pb.cc
+src/proto/*.pb.h
+src/proto/*.grpc.pb.cc
+src/proto/*.grpc.pb.h
+
+# Local only docs
+docs/system_insight_evolution.md
+local_notes/
+third_party/cmake_cache/
+.cmake-prefetch/
+third_party/offline/archives/
+third_party/offline/src/
+
+README.md

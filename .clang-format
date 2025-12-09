@@ -1,0 +1,19 @@
+BasedOnStyle: Google
+ColumnLimit: 100
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+DerivePointerAlignment: false
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBraces: Attach
+Cpp11BracedListStyle: true
+SpacesInParentheses: false
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+Standard: Cpp17
+

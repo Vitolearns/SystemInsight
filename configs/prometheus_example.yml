@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "system_insight"
+    static_configs:
+      - targets: ["system_insight_dev:9102"]
+
