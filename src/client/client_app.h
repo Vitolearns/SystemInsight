@@ -21,8 +21,6 @@ class ClientApp {
   void RequestStop();
 
  private:
-  void InstallSignalHandlers();
-
   common::config::ClientConfig config_;
   std::atomic<bool> should_exit_{false};
 };
