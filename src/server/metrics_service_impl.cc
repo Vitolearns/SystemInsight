@@ -9,7 +9,8 @@ MetricsServiceImpl::MetricsServiceImpl(std::shared_ptr<MetricsRepository> reposi
     : repository_(std::move(repository)) {}
 
 grpc::Status MetricsServiceImpl::SendMetrics(
-    grpc::ServerContext* /*context*/, const systeminsight::proto::MetricsReport* request,
+    grpc::ServerContext* /*context*/, 
+    const systeminsight::proto::MetricsReport* request,
     systeminsight::proto::ReportAck* response) {
   LOGI("received {} samples from host {}", request->samples_size(), request->host_id());
   if (repository_) {

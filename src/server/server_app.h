@@ -25,6 +25,7 @@ class ServerApp {
   void SetListenAddress(std::string address);
   // 阻塞运行，直到 Shutdown 被调用或捕获终止信号。
   void Run();
+  void RequestStop();
   void Shutdown();
 
  private:

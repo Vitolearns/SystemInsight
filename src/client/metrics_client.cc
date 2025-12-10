@@ -7,7 +7,8 @@ namespace client {
 MetricsClient::MetricsClient(std::shared_ptr<grpc::Channel> channel)
     : stub_(systeminsight::proto::SystemInsightService::NewStub(channel)) {}
 
-bool MetricsClient::SendReport(const std::string& host_id, const std::string& collector_version,
+bool MetricsClient::SendReport(const std::string& host_id,
+                               const std::string& collector_version,
                                const std::vector<systeminsight::proto::MetricSample>& samples) {
   systeminsight::proto::MetricsReport report;
   report.set_host_id(host_id);

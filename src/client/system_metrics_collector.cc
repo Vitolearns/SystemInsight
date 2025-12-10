@@ -41,17 +41,19 @@ std::vector<systeminsight::proto::MetricSample> SystemMetricsCollector::Collect(
   uint64_t mem_available = 0;
   if (ReadMemInfo(&mem_total, &mem_available) && mem_total > 0) {
     double used_ratio = static_cast<double>(mem_total - mem_available) / mem_total * 100.0;
+    int64_t timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::system_clock::now().time_since_epoch())
+                               .count();
+
     auto& mem_usage = samples.emplace_back();
     mem_usage.set_name("system.mem.usage_percent");
     mem_usage.set_value(used_ratio);
-    mem_usage.set_timestamp_ms(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch())
-                                   .count());
+    mem_usage.set_timestamp_ms(timestamp_ms);
 
     auto& mem_available_sample = samples.emplace_back();
     mem_available_sample.set_name("system.mem.available_bytes");
     mem_available_sample.set_value(static_cast<double>(mem_available) * 1024.0);
-    mem_available_sample.set_timestamp_ms(mem_usage.timestamp_ms());
+    mem_available_sample.set_timestamp_ms(timestamp_ms);
   }
 
   uint64_t rx_bytes = 0;
@@ -63,17 +65,19 @@ std::vector<systeminsight::proto::MetricSample> SystemMetricsCollector::Collect(
       double rx_rate = static_cast<double>(rx_bytes - prev_rx_bytes_) / elapsed_sec;
       double tx_rate = static_cast<double>(tx_bytes - prev_tx_bytes_) / elapsed_sec;
 
+      int64_t timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                 std::chrono::system_clock::now().time_since_epoch())
+                                 .count();
+
       auto& rx_sample = samples.emplace_back();
       rx_sample.set_name("system.net.rx_bytes_per_sec");
       rx_sample.set_value(rx_rate);
-      rx_sample.set_timestamp_ms(std::chrono::duration_cast<std::chrono::milliseconds>(
-                                     std::chrono::system_clock::now().time_since_epoch())
-                                     .count());
+      rx_sample.set_timestamp_ms(timestamp_ms);
 
       auto& tx_sample = samples.emplace_back();
       tx_sample.set_name("system.net.tx_bytes_per_sec");
       tx_sample.set_value(tx_rate);
-      tx_sample.set_timestamp_ms(rx_sample.timestamp_ms());
+      tx_sample.set_timestamp_ms(timestamp_ms);
     }
     prev_rx_bytes_ = rx_bytes;
     prev_tx_bytes_ = tx_bytes;

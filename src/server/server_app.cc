@@ -1,6 +1,5 @@
 #include "src/server/server_app.h"
 
-#include <csignal>
 #include <stdexcept>
 #include <utility>
 
@@ -10,18 +9,9 @@
 namespace system_insight {
 namespace server {
 
-namespace {
-std::function<void(int)>* g_signal_handler = nullptr;
-
-void SignalTrampoline(int signal) {
-  if (g_signal_handler != nullptr) {
-    (*g_signal_handler)(signal);
-  }
-}
-}  // namespace
-
-ServerApp::ServerApp(common::config::ServerConfig config, std::shared_ptr<MetricsRepository> repository)
-    : config_(std::move(config)),
+ServerApp::ServerApp(common::config::ServerConfig config,
+                     std::shared_ptr<MetricsRepository> repository): 
+      config_(std::move(config)),
       repository_(repository ? std::move(repository) : std::make_shared<MetricsRepository>()),
       exporter_(std::make_unique<exporter::PrometheusExporter>(repository_, config_.prometheus_http_port)),
       service_(repository_) {}
@@ -45,18 +35,11 @@ void ServerApp::Run() {
   LOGI("server listening on {}", config_.listen_address);
   exporter_->Start();
 
-  g_signal_handler = new std::function<void(int)>(
-      [this](int signal) {
-        LOGW("Caught signal {}, shutting down...", signal);
-        Shutdown();
-      });
-  std::signal(SIGINT, SignalTrampoline);
-  std::signal(SIGTERM, SignalTrampoline);
-
   server_->Wait();
+}
 
-  delete g_signal_handler;
-  g_signal_handler = nullptr;
+void ServerApp::RequestStop() {
+  Shutdown();
 }
 
 void ServerApp::Shutdown() {
