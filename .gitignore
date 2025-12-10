@@ -15,9 +15,5 @@ src/proto/*.pb.h
 src/proto/*.grpc.pb.cc
 src/proto/*.grpc.pb.h
 
-# Local only docs
-docs/system_insight_evolution.md
 local_notes/
 third_party/cmake_cache/
-
-README.md
