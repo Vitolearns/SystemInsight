@@ -17,3 +17,8 @@ src/proto/*.grpc.pb.h
 
 local_notes/
 third_party/cmake_cache/
+
+# Offline build archives (too large for GitHub)
+third_party/offline/archives/*.tar.gz
+third_party/offline/archives/*.zip
+!third_party/offline/archives/.gitkeep
