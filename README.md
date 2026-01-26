@@ -6,6 +6,7 @@
 - 服务端聚合并通过 Prometheus metrics 暴露，Grafana 看板展示
 - 全流程统一使用 CMake 构建体系
 - 编译、运行均可在 Docker 容器中完成
+- 支持内核模块 + mmap 高性能采集模式
 
 ## 项目结构
 
@@ -17,8 +18,10 @@
 ├── scripts/             # 构建 / 容器相关脚本
 ├── src/
 │   ├── client/          # gRPC client & 指标采集框架
+│   │   └── metrics/     # mmap 采集器（高性能模式）
 │   ├── common/          # 工具、日志、配置解析
 │   ├── exporter/        # Prometheus/Grafana 对接C++程序的接口
+│   ├── kmod/            # 内核模块（CPU 统计 + 软中断统计）
 │   ├── proto/           # .proto 及生成规则
 │   └── server/          # gRPC server + 聚合逻辑
 ├── tests/               # 单元 & 集成测试
@@ -62,14 +65,72 @@
    ./build/src/server/system_insight_server --config=configs/server_example.json
    ./build/src/client/system_insight_client --config=configs/client_example.json
    ```
-4. **配置文件**
-   - `configs/server_example.json`：gRPC 监听、日志级别、Prometheus exporter 端口
-   - `configs/client_example.json`：采集周期、目标地址、日志级别、host id
+
+## 内核模块（可选，高性能模式）
+
+系统支持两种采集模式，可按需选择：
+
+### 模式 1：mmap 模式（高性能）
+
+加载内核模块后，通过 mmap 直接读取内核共享内存，性能更高且可获取软中断详情。
+
+**Docker 中使用步骤：**
+
+```bash
+# 1. 重新构建镜像（包含内核头文件）
+./scripts/system_insight_docker_build.sh
+
+# 2. 使用特权模式启动容器
+./scripts/system_insight_docker_stop.sh   # 如果有旧容器
+./scripts/system_insight_docker_run.sh
+
+# 3. 进入容器并加载内核模块
+./scripts/system_insight_docker_into.sh
+cd /opt/system_insight/src/kmod
+make load
+
+# 4. 验证
+ls -la /dev/system_insight_*
+
+# 5. 编辑配置文件启用 mmap 模式
+#    修改 configs/client_example.json:
+#    "use_mmap": true
+```
+
+**配置示例：**
+```json
+{
+  "client": {
+    "target": "127.0.0.1:50052",
+    "collection_interval_ms": 5000,
+    "use_mmap": true
+  }
+}
+```
+
+**支持的指标：**
+- per-CPU 核心使用率（`system.cpu.core.usage_percent`）
+- 软中断统计（`system.softirq.*_per_sec`）
+
+### 模式 2：/proc 模式（回退兼容）
+
+如果内核模块未加载，系统会自动回退到读取 `/proc/*` 文件系统。
+
+**支持指标：**
+- 整体 CPU 使用率（`system.cpu.usage_percent`）
+- 内存使用率（`system.mem.usage_percent`）
+- 网络速率（`system.net.*_bytes_per_sec`）
+
+## 配置文件
+
+- `configs/server_example.json`：gRPC 监听、日志级别、Prometheus exporter 端口
+- `configs/client_example.json`：采集周期、目标地址、日志级别、host id、mmap 模式配置
 
 所有二进制均通过 `gflags` 暴露 `--config=/path/to/json` 参数，服务端/客户端可在本地或容器内自由切换配置，实现环境隔离。
 
-客户端读取 `/proc/stat`、`/proc/meminfo`、`/proc/net/dev` 采集 CPU / 内存 / 网络指标，通过 gRPC 向服务端上报；服务端接收后存入指标仓库，后续会通过 Prometheus exporter 对 Grafana 暴露。
-
+客户端支持两种采集方式：
+- **mmap 模式**：加载内核模块后，通过 mmap 读取内核共享内存（需要 `use_mmap: true`）
+- **/proc 模式**：读取 `/proc/stat`、`/proc/meminfo`、`/proc/net/dev`
 
 ## Prometheus / Grafana
 

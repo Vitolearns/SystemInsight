@@ -1,9 +1,9 @@
-#include "src/common/config/config_loader.h"
+#include "../src/common/config/config_loader.h"
 
 #include <filesystem>
 #include <fstream>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 namespace fs = std::filesystem;
 using system_insight::common::config::ClientConfig;

@@ -88,6 +88,21 @@ ClientConfig LoadClientConfig(const std::string& path) {
     } else {
       LOGW("client.host_id not found or not a string, will use detected hostname");
     }
+    
+    // mmap 采集器配置
+    if (auto use_mmap = client_section.find("use_mmap"); use_mmap != client_section.end()) {
+      if (use_mmap->is_boolean()) {
+        config.use_mmap = use_mmap->get<bool>();
+      }
+    }
+    if (auto mmap_cpu_path = client_section.find("mmap_cpu_device_path"); 
+        mmap_cpu_path != client_section.end() && mmap_cpu_path->is_string()) {
+      config.mmap_cpu_device_path = mmap_cpu_path->get<std::string>();
+    }
+    if (auto mmap_softirq_path = client_section.find("mmap_softirq_device_path"); 
+        mmap_softirq_path != client_section.end() && mmap_softirq_path->is_string()) {
+      config.mmap_softirq_device_path = mmap_softirq_path->get<std::string>();
+    }
   } else {
     LOGW("client section not found or not an object in config, using defaults");
   }

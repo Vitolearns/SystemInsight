@@ -3,7 +3,7 @@
     "target": "127.0.0.1:50052",
     "collection_interval_ms": 5000,
     "log_level": "info",
-    "host_id": ""
+    "host_id": "",
+    "use_mmap": true
   }
 }
-

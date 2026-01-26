@@ -6,73 +6,52 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/third_party/cmake_cache")
-file(MAKE_DIRECTORY "${FETCHCONTENT_BASE_DIR}")
+# Use pkg-config for system-installed packages
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(Protobuf REQUIRED protobuf)
+pkg_check_modules(GRPC REQUIRED grpc++)
+pkg_check_modules(GFLAGS REQUIRED gflags)
+pkg_check_modules(SPDLOG REQUIRED spdlog)
+pkg_check_modules(nlohmann_json REQUIRED nlohmann_json)
 
-include(FetchContent)
+# Find other system packages
+find_package(GTest)
 
-set(GFLAGS_USE_TARGET_NAMESPACE TRUE)
-
-# Prefer config packages so that modern imported targets (and their deps like Abseil)
-# are wired correctly, especially for protobuf / gRPC.
-find_package(Protobuf CONFIG REQUIRED)
-find_package(gRPC CONFIG QUIET)
-find_package(spdlog CONFIG QUIET)
-find_package(gflags CONFIG QUIET)
-find_package(nlohmann_json CONFIG QUIET)
-find_package(GTest CONFIG QUIET)
-
-# Abseil is required by newer protobuf versions for logging / checks; link via targets.
-find_package(absl CONFIG REQUIRED)
-
-if(NOT gRPC_FOUND)
-    message(STATUS "gRPC CONFIG package not found, falling back to FetchContent.")
-    FetchContent_Declare(
-        grpc
-        GIT_REPOSITORY https://github.com/grpc/grpc.git
-        GIT_TAG v1.62.0
-        GIT_PROGRESS TRUE
-        GIT_SHALLOW FALSE
-        GIT_SUBMODULES_RECURSE TRUE
-    )
-    set(FETCHCONTENT_QUIET OFF)
-    FetchContent_MakeAvailable(grpc)
-endif()
-
-if(NOT spdlog_FOUND)
-    message(STATUS "spdlog CONFIG package not found, falling back to FetchContent.")
-FetchContent_Declare(
-        spdlog
-        URL https://github.com/gabime/spdlog/archive/refs/tags/v1.13.0.zip
+# Create imported targets from pkg-config variables
+add_library(grpc::grpc++ INTERFACE IMPORTED)
+set_target_properties(grpc::grpc++ PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${GRPC_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${GRPC_LIBRARIES}"
 )
-    FetchContent_MakeAvailable(spdlog)
-endif()
 
-if(NOT gflags_FOUND)
-    message(STATUS "gflags CONFIG package not found, falling back to FetchContent.")
-FetchContent_Declare(
-    gflags
-    URL https://github.com/gflags/gflags/archive/refs/tags/v2.2.2.zip
+add_library(protobuf::libprotobuf INTERFACE IMPORTED)
+set_target_properties(protobuf::libprotobuf PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${Protobuf_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${Protobuf_LIBRARIES}"
 )
-FetchContent_MakeAvailable(gflags)
-endif()
 
-if(NOT nlohmann_json_FOUND)
-    message(STATUS "nlohmann_json CONFIG package not found, falling back to FetchContent.")
-FetchContent_Declare(
-    nlohmann_json
-    URL https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.zip
+add_library(gflags::gflags INTERFACE IMPORTED)
+set_target_properties(gflags::gflags PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${GFLAGS_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${GFLAGS_LIBRARIES}"
 )
-FetchContent_MakeAvailable(nlohmann_json)
-endif()
 
-if(NOT GTest_FOUND)
-    message(STATUS "GTest CONFIG package not found, falling back to FetchContent.")
-    FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-    )
-    FetchContent_MakeAvailable(googletest)
+add_library(spdlog::spdlog INTERFACE IMPORTED)
+set_target_properties(spdlog::spdlog PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${SPDLOG_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${SPDLOG_LIBRARIES}"
+)
+
+add_library(nlohmann_json::nlohmann_json INTERFACE IMPORTED)
+set_target_properties(nlohmann_json::nlohmann_json PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${nlohmann_json_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${nlohmann_json_LIBRARIES}"
+)
+
+# Find absl (may not be available on all systems)
+find_package(absl)
+if(NOT absl_FOUND)
+    message(STATUS "absl not found, continuing without it")
 endif()
 
 add_subdirectory(src/common)

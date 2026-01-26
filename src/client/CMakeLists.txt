@@ -2,6 +2,8 @@ add_library(system_insight_client_lib
     client_app.cc
     metrics_client.cc
     system_metrics_collector.cc
+    metrics/mmap_reader.cc
+    metrics/cpu_mmap_collector.cc
 )
 
 target_include_directories(system_insight_client_lib
@@ -14,7 +16,7 @@ target_link_libraries(system_insight_client_lib
     system_insight_common_config
     system_insight_common_logging
     system_insight_proto
-    gRPC::grpc++
+    grpc::grpc++
 )
 
 add_executable(system_insight_client main.cc)
@@ -23,4 +25,3 @@ target_link_libraries(system_insight_client
     system_insight_client_lib
     gflags::gflags
 )
-

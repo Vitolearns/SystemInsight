@@ -29,7 +29,7 @@ target_link_libraries(system_insight_server_lib
     system_insight_metrics_repository
     system_insight_exporter
     system_insight_proto
-    gRPC::grpc++
+    grpc::grpc++
 )
 
 add_executable(system_insight_server main.cc)
@@ -40,4 +40,3 @@ target_link_libraries(system_insight_server
     system_insight_server_lib
     gflags::gflags
 )
-

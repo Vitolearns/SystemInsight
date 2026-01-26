@@ -1,5 +1,6 @@
 #include "src/server/server_app.h"
 
+#include <chrono>
 #include <stdexcept>
 #include <utility>
 
@@ -39,9 +40,13 @@ void ServerApp::Run() {
 }
 
 void ServerApp::RequestStop() {
-  Shutdown();
+  // 使用立即关闭来快速响应信号
+  if (server_) {
+    server_->Shutdown(std::chrono::system_clock::now());
+  }
 }
 
+// 优雅关闭，在析构里执行
 void ServerApp::Shutdown() {
   if (server_) {
     server_->Shutdown();

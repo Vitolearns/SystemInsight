@@ -26,4 +26,3 @@ target_link_libraries(system_insight_common_config
     system_insight_common_logging
     nlohmann_json::nlohmann_json
 )
-

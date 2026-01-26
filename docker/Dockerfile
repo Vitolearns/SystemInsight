@@ -14,14 +14,22 @@ RUN apt-get update && \
         python3 \
         python3-pip \
         unzip \
-        protobuf-compiler \
+        cmake \
+        ninja-build \
+        kmod \
+        sudo \
         libprotobuf-dev \
+        protobuf-compiler \
         libgrpc++-dev \
         libgrpc-dev \
+        protobuf-compiler-grpc \
         libspdlog-dev \
         libgflags-dev \
         nlohmann-json3-dev \
-        libssl-dev && \
+        libgtest-dev \
+        libssl-dev \
+        linux-headers-$(uname -r) \
+        linux-headers-generic && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/system_insight
@@ -29,13 +37,7 @@ WORKDIR /opt/system_insight
 COPY . .
 
 ENV OFFLINE_ROOT=/opt/system_insight/third_party/offline
-RUN ARCHIVE_ROOT="${OFFLINE_ROOT}/archives" \
-    BUILD_ROOT="/tmp/system_insight_offline_build" \
-    INSTALL_PREFIX="/usr/local" \
-    "${OFFLINE_ROOT}/installers/install_all.sh"
-
 ENV PATH="/opt/cmake/bin:${PATH}"
 
 EXPOSE 50052 9102
 CMD ["/bin/bash"]
-
